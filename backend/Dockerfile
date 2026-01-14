@@ -19,14 +19,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy backend application code
+COPY backend/ /app/
+
+# Copy ml_engine to make it accessible (ml_engine is imported by backend)
+COPY ml_engine/ /ml_engine/
+
+# Add ml_engine to Python path
+ENV PYTHONPATH=/ml_engine:$PYTHONPATH
 
 # Create directory for ML models
 RUN mkdir -p /app/ml_models

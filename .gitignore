@@ -119,3 +119,5 @@ Thumbs.db
 # Keep example files
 !.env.example
 
+*
+!.gitignore

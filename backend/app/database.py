@@ -3,7 +3,7 @@ Database connection and session management.
 Uses SQLAlchemy for database operations.
 """
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
@@ -17,6 +17,11 @@ engine = create_engine(
     max_overflow=settings.DB_MAX_OVERFLOW,
     pool_pre_ping=True,  # Verify connections before using
     echo=settings.DEBUG,  # Log SQL queries in debug mode
+    pool_timeout=30,  # Timeout for getting connection from pool
+    connect_args={
+        "connect_timeout": 10,  # Connection timeout in seconds
+        "options": "-c statement_timeout=30000"  # 30 second statement timeout (PostgreSQL)
+    } if "postgresql" in settings.DATABASE_URL else {}
 )
 
 # Create session factory
@@ -57,10 +62,12 @@ def check_db_connection() -> bool:
     Returns True if connection is successful, False otherwise.
     """
     try:
+        # Use a timeout to prevent hanging
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            result = connection.execute(text("SELECT 1"))
+            result.fetchone()  # Actually fetch the result
         return True
     except Exception as e:
-        print(f"Database connection failed: {e}")
+        # Don't print here - let the caller handle logging
         return False
 
