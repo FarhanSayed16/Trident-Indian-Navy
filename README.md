@@ -1,7 +1,7 @@
 # TRIDENT - ML-Enabled Network Anomaly Detection Module for WAF
 
 **Project Name:** TRIDENT  
-**Challenge:** SWAVLAMBAN 2025 HACKATHON - Challenge 3  
+**Challenge:** TechXpression 2026 HACKATHON
 **Version:** 0.1.0  
 **Status:** ✅ Production Ready
 
@@ -951,7 +951,7 @@ This project is developed for **TechXpression 2025 HACKATHON**.
 
 ## 🙏 Acknowledgments
 
-- **Challenge:** TechXpression 2025 HACKATHON
+- **Challenge:** TechXpression 2026 HACKATHON
 - **Framework:** FastAPI, React, scikit-learn, PyTorch
 - **Infrastructure:** Docker, PostgreSQL
 
