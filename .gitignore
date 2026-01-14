@@ -50,6 +50,11 @@ venv.bak/
 *.sqlite3
 
 # Logs
+logs/
+*.log
+*.log.*
+
+# Logs
 *.log
 logs/
 *.log.*

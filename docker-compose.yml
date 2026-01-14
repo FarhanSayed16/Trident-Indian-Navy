@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -17,7 +15,7 @@ services:
     networks:
       - trident-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trident_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trident_user} -d ${POSTGRES_DB:-trident_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,23 +43,24 @@ services:
   # Backend API (FastAPI)
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: trident-backend
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-trident_user}:${POSTGRES_PASSWORD:-trident_password}@postgres:5432/${POSTGRES_DB:-trident_db}
       - REDIS_URL=redis://redis:6379
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PYTHONPATH=/ml_engine:$PYTHONPATH
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
+      - ./ml_engine:/ml_engine
+      - ./scripts:/scripts
       - backend_models:/app/ml_models
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - trident-network
@@ -86,6 +85,25 @@ services:
     networks:
       - trident-network
     restart: unless-stopped
+
+  # Mock WAF Service (for demo)
+  mock-waf:
+    build:
+      context: ./mock_waf
+      dockerfile: Dockerfile
+    container_name: trident-mock-waf
+    environment:
+      - WAF_API_KEY=${WAF_API_KEY:-trident-waf-api-key-2025}
+    ports:
+      - "${MOCK_WAF_PORT:-8001}:8001"
+    networks:
+      - trident-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import socket; s=socket.socket(); s.connect((\"localhost\", 8001)); s.close()' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   trident-network:
